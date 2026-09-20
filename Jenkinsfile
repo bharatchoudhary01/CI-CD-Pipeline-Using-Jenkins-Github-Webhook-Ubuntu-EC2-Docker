@@ -1,0 +1,46 @@
+pipeline {
+    agent any 
+
+    environment {
+        CONTAINER_NAME = "nestjs-app"
+        IMAGE_NAME = "nestjs-image"
+        EMAIL = "bharatchoudhary89ba@gmail.com"
+        PORT = "3000"
+    }
+
+    stages {
+        stage('Clone Repo'){
+            steps{
+                git branch: 'main', url: 'https://github.com/bharatchoudhary01/CI-CD-Pipeline-Using-Jenkins-Github-Webhook-Ubuntu-EC2-Docker.git'
+            }
+        }
+
+        stage('Build Docker Image'){
+            steps{
+                sh 'docker build -t $Immage_NAME'
+            }
+        }
+        stage('Stop & Remove Previous Container'){
+            steps{
+                sh '''
+                    docker stop $CONTAINER_NAME || true
+                    docker rm $CONATINER_NAME || true
+                '''
+            }
+        }
+        stage('Docker Container Run'){
+            steps{
+                sh '''
+                    docker run -d -p ${PORT}:${PORT} --name $CONTAINER_NAME $IMAGE_NAME
+                '''
+            }
+        }
+        stage('Send Email Notification'){
+            steps{
+               emailtext(
+                subject: "NestJS App Deployed Successfully on EC2!"
+                body: "Your Nest JS App is Deployed! http://13.61.143.221:${PORT}/"
+                to: "${EMAIL}"
+               )
+    }
+}
